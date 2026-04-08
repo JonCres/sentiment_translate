@@ -1,0 +1,179 @@
+# Data Catalog for Voice of the Client (Marketing)
+
+# ==========================================
+# 1. RAW DATA LAYER (Bronze)
+# ==========================================
+raw_feedback:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/client_feedback.csv
+
+# ==========================================
+# 2. INTERMEDIATE LAYER (Silver)
+# ==========================================
+clean_feedback:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/02_intermediate/clean_feedback.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+# ==========================================
+# 3. PRIMARY LAYER (Gold)
+# ==========================================
+# Standardized features including sentiment and emotion vectors
+feedback_features:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/03_primary/feedback_features.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+feedback_with_sentiment:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/03_primary/feedback_with_sentiment.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+feedback_with_emotions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/03_primary/feedback_with_emotions.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+# ==========================================
+# 4. FEATURE STORE LAYER (Delta Lake)
+# ==========================================
+features_delta:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/04_feature/client_features.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+# ==========================================
+# 5. MODEL INPUT LAYER
+# ==========================================
+model_input_table:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/05_model_input/model_input.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+# ==========================================
+# 6. MODELS LAYER
+# ==========================================
+absa_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/absa_model.pkl
+
+mer_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/mer_model.pkl
+
+topic_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/topic_model.pkl
+
+rating_regressor:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/rating_regressor.pkl
+
+churn_classifier:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/churn_classifier.pkl
+
+X_test_churn:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/05_model_input/X_test_churn.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+y_test_churn:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/05_model_input/y_test_churn.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+feedback_with_churn:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/05_model_input/feedback_with_churn.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+final_enriched_feedback:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  filepath: data/05_model_input/final_enriched_feedback.delta
+  file_format: delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+  load_args:
+    to_pandas: true
+
+shap_explanations:
+  type: json.JSONDataset
+  filepath: data/08_reporting/shap_explanations.json
+
+# ==========================================
+# 7. REPORTING LAYER
+# ==========================================
+drift_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/drift_metrics.json
+
+model_training_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/train_metrics.json
+
+model_monitoring_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/monitor_metrics.json
+
+visualization_assets:
+  type: json.JSONDataset
+  filepath: data/08_reporting/visualization_assets.json
+
+nlp_business_correlations:
+  type: json.JSONDataset
+  filepath: data/08_reporting/nlp_business_correlations.json

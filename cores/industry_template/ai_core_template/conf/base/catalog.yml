@@ -1,0 +1,37 @@
+# Data Catalog
+# Define your datasets here
+
+raw_data:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/data.csv
+
+clean_data:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/clean_data.parquet
+
+features_data:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/features.parquet
+
+model_input_table:
+  type: pandas.ParquetDataset
+  filepath: data/04_feature/model_input.parquet
+
+regressor:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.sklearn
+  save_args:
+    name: "regressor"
+    registered_model_name: "template_regressor_model"
+
+drift_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/drift_metrics.json
+
+performance_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/performance_metrics.json
+
+feast_registration_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/feast_registration_status.json

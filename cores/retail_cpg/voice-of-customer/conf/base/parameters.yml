@@ -1,0 +1,331 @@
+# ==========================================
+# DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  # Source data settings (CSV loaded from catalog)
+  source:
+    sample_size: 50000 # Set to null to use all data
+
+  # Validation rules (uses skeleton column names after mapping)
+  validation:
+    min_review_length: 10
+    max_review_length: 500
+    required_columns:
+      - Interaction_ID
+      - Target_Object_ID
+      - Customer_ID
+      - Interaction_Payload
+      - Rating
+      - Timestamp
+    rating_range: [1, 5]
+    max_null_percentage: 0.1
+
+  # Cleaning parameters
+  cleaning:
+    remove_html: true
+    remove_urls: true
+    remove_special_chars: false
+    lowercase: true
+    remove_extra_spaces: true
+    languages: ["en"]
+
+  # Translation parameters
+  translation:
+    target_language: "en"
+    enabled: true
+    source_language: "auto"
+
+  # Feature engineering
+  features:
+    extract_length: true
+    extract_word_count: true
+    extract_exclamation_count: true
+    extract_question_count: true
+    extract_caps_ratio: true
+
+# ==========================================
+# SKELETON MAPPING PARAMETERS
+# ==========================================
+# Maps source columns to mandatory VoC schema (Section 2 of walkthrough)
+skeleton_mapping:
+  mandatory:
+    Interaction_ID: "review_id" # Event Primary Key
+    Interaction_Payload: "review_text" # Unstructured Content Blob
+    Customer_ID: "customer_id" # Entity Subject ID
+    Timestamp: "date" # Temporal Reference
+    Channel_ID: null # Source Context Metadata (default applied)
+    Target_Object_ID: "product_id" # Entity Object Reference
+    Language_Code: null # Linguistic Context (default applied)
+    Rating: "rating" # Ground Truth Label
+  optional:
+    Verified_Purchase_Flag: "verified_purchase"
+    Customer_Segment: null
+    Interaction_Duration: null
+  defaults:
+    Channel_ID: "Web_Review"
+    Language_Code: "en"
+
+# ==========================================
+# SENTIMENT ANALYSIS PARAMETERS
+# ==========================================
+sentiment_analysis:
+  model:
+    name: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    type: "transformers"
+    batch_size: 32
+    max_length: 512
+
+  labels:
+    positive: "positive"
+    neutral: "neutral"
+    negative: "negative"
+
+  thresholds:
+    positive_min: 0.6
+    negative_max: 0.4
+
+# ==========================================
+# ASPECT-BASED SENTIMENT ANALYSIS (ABSA)
+# ==========================================
+# Section 1.1 of Voice of Customer AI Walkthrough
+absa:
+  model:
+    name: "yangheng/deberta-v3-base-absa-v1.1"
+    batch_size: 16
+    max_length: 256
+  aspects:
+    # Predefined aspects for retail/CPG domain
+    predefined:
+      - price
+      - quality
+      - shipping
+      - delivery
+      - packaging
+      - customer service
+      - value
+      - size
+      - durability
+    extract_custom: true # Also extract custom aspects via NLP
+
+# ==========================================
+# TOPIC MODELING PARAMETERS
+# ==========================================
+topic_modeling:
+  model:
+    algorithm: "BERTopic"
+    embedding_model: "all-MiniLM-L6-v2"
+    nr_topics: "auto"
+    min_topic_size: 50
+    calculate_probabilities: true
+    # Topic naming configuration for user-friendly labels (fallback)
+    naming:
+      top_n_words: 4 # Number of keywords to use for topic names
+      max_label_length: 50 # Maximum length of topic labels
+    # LLM-based labeling configuration (Local SLM or Groq Cloud API)
+    llm:
+      enabled: true # Set to false to use keyword-based labels
+      provider: "groq" # Options: "local" (HuggingFace SLM), "groq" (Groq Cloud API)
+      # Model options:
+      # - "llama-3.1-8b-instant" (Groq - default fast)
+      # - "llama-3.3-70b-versatile" (Groq - best quality)
+      # - "microsoft/Phi-3-mini-4k-instruct" (Local - 3.8B params, recommended)
+      model: "llama-3.1-8b-instant"
+      temperature: 0.2 # Lower = more deterministic labels
+      max_tokens: 50 # Max tokens for label generation
+      top_n_words: 10 # c-TF-IDF words to send to LLM
+      top_n_docs: 3 # Representative docs to send to LLM
+
+  reduction:
+    n_neighbors: 15
+    n_components: 5
+    min_dist: 0.0
+
+  clustering:
+    min_cluster_size: 50
+    metric: "euclidean"
+    cluster_selection_method: "eom"
+    core_dist_n_jobs: 3 # Number of CPU cores for HDBSCAN parallelization
+
+# ==========================================
+# MONITORING PARAMETERS
+# ==========================================
+monitoring:
+  sentiment_drift:
+    baseline_window_days: 30
+    detection_method: "chi_square"
+    threshold: 0.05
+
+  topic_drift:
+    min_topic_shift: 0.1 # 10% change
+    alert_threshold: 0.2 # 20% change
+
+  quality_metrics:
+    min_avg_confidence: 0.7
+    max_neutral_percentage: 0.4
+
+  alerts:
+    email: "ml-team@company.com"
+    channels:
+      - email
+
+# ==========================================
+# REPORTING PARAMETERS
+# ==========================================
+reporting:
+  dashboard:
+    top_n_topics: 10
+    top_n_keywords: 15
+    sentiment_breakdown: true
+    time_series_analysis: true
+
+  export:
+    format: "json"
+    include_raw_data: false
+
+# ==========================================
+# BUSINESS KPIs (Section 7.2 of Walkthrough)
+# ==========================================
+business_kpis:
+  sentiment_recovery:
+    window_days: 7 # Days to check for sentiment recovery
+    recovery_threshold: 0.3 # Min improvement to count as recovery
+  product_issue_detection:
+    negative_threshold: 0.3 # Topic with >30% negative = potential issue
+    min_mentions: 10 # Minimum mentions to flag as issue
+  aspect_alerts:
+    critical_negative_pct: 50 # Alert if aspect has >50% negative
+
+# ==========================================
+# MULTIMODAL EMOTION RECOGNITION (MER)
+# ==========================================
+# Section 1.2 of Voice of Customer AI Walkthrough
+# Currently disabled - enable when audio/video data is available
+mer:
+  enabled: true # ENABLED for text-based emotion detection
+  model:
+    name: "j-hartmann/emotion-english-distilroberta-base"
+    batch_size: 32
+    max_length: 512
+  audio:
+    sample_rate: 16000
+    features: ["mfcc", "pitch", "energy", "jitter", "shimmer"]
+    window_ms: 25
+  visual:
+    fps: 5 # Frame sampling rate
+    face_detection_model: "mtcnn"
+  fusion:
+    strategy: "late" # late, transformer, hierarchical
+
+# ==========================================
+# VISUALIZATION PARAMETERS
+# ==========================================
+visualization:
+  # Sentiment visualization settings
+  sentiment_dist:
+    show_percentages: true
+
+  sentiment_confidence:
+    show_mean: true
+    show_quartiles: true
+
+  sentiment_rating:
+    normalize: true
+    show_counts: false
+
+  # Topic visualization settings
+  topic_dist:
+    top_topics: 10
+
+  topic_wordclouds:
+    top_topics: 6
+    max_words: 50
+    width: 400
+    height: 300
+
+  # Combined visualizations
+  sentiment_topic_heatmap:
+    top_topics: 10
+    normalize: true
+
+  overview_dashboard:
+    top_topics: 5
+    show_metrics: true
+
+  # AI interpretation settings (LLM-powered insights)
+  interpretation:
+    enabled: true
+    llm:
+      model: "moonshotai/kimi-k2-instruct-0905" # Groq model for interpretation
+      temperature: 0.6
+      max_tokens: 2048
+
+  # Output settings
+  save:
+    output_dir: "data/08_reporting/visualizations"
+    format: "html" # For plotly plots
+    dpi: 300 # For matplotlib plots
+    save_data: true
+
+# ==========================================
+# CUSTOMER ANALYSIS PARAMETERS
+# ==========================================
+customer_analysis:
+  min_reviews_per_customer: 3
+  top_customers_count: 20
+
+  # Customer profiling settings
+  profile:
+    include_sentiment_distribution: true
+    include_topic_diversity: true
+    include_temporal_patterns: true
+
+# ==========================================
+# STREAMLIT APP PARAMETERS
+# ==========================================
+streamlit:
+  page_title: "Voice of Customer Explorer"
+  page_icon: "📊"
+  layout: "wide"
+  default_customer_count: 10
+  visualization_path: "data/08_reporting/visualizations"
+  groq_model: "moonshotai/kimi-k2-instruct-0905"
+  charts:
+    theme: "plotly_white"
+    height: 500
+
+# ==========================================
+# RATING PREDICTION MODEL PARAMETERS
+# ==========================================
+rating_prediction:
+  model:
+    test_size: 0.2
+    random_state: 42
+    embedding_model: "BAAI/bge-small-en-v1.5" # Base pretrained model
+    use_fine_tuned_model: false # Set to true to use the model from fine_tuning.output_path
+    grid_search:
+      classifier__n_estimators: [100]
+      classifier__max_depth: [10, None] # None for no limit
+      classifier__min_samples_split: [2, 5]
+      classifier__min_samples_leaf: [4]
+      classifier__max_features: ["sqrt"] # ['auto', 'sqrt', 'log2']
+      cv: 5 # Number of folds for cross-validation
+      n_jobs: 3 # Number of CPU cores to use, -1 for all
+      verbose: 1 # Verbosity level of GridSearchCV
+
+  sources:
+    train_data: "reviews_validated" # Dataset to use for training
+
+  fine_tuning:
+    batch_size: 16
+    epochs: 4
+    warmup_steps: 100
+    num_workers: 2 # Parallel data loading
+    learning_rate: 2e-5
+    output_path: "data/06_models/fine_tuned_embeddings"
+
+# ==========================================
+# FEAST FEATURE STORE
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  delta_path: "data/03_primary/review_features"

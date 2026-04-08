@@ -1,0 +1,76 @@
+# ==========================================
+# 1. DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  raw_data_path: "data/01_raw/data.csv"
+  processed_data_path: "data/02_intermediate/processed_data.parquet"
+  test_size: 0.2
+  random_state: 42
+  imputation_strategy: "mean" # Options: mean, median, most_frequent, constant
+  normalization: "standard" # Options: minmax, standard, robust, none
+  
+  # Skeleton Data Mapping (Standardized Interface)
+  skeleton:
+    mapping:
+      entity_id: "id"
+      timestamp: "date"
+      feature_value: "value"
+
+# ==========================================
+# 2. AI MODELING PARAMETERS
+# ==========================================
+modeling:
+  model_type: "sklearn_rf" # Options: xgboost, lightgbm, sklearn_rf, sklearn_lr
+  hyperparameters:
+    learning_rate: 0.01 # For gradient boosting models
+    n_estimators: 100
+    max_depth: 10
+    batch_size: 32 # For deep learning models
+    epochs: 50 # For deep learning models
+  cross_validation:
+    n_splits: 5
+    n_repeats: 3 # If using RepeatedKFold
+
+# ==========================================
+# 3. VISUALIZATION PARAMETERS
+# ==========================================
+visualization:
+  plots_dir: "data/08_reporting/plots"
+  generate_feature_importance: true
+  generate_confusion_matrix: true
+  plot_theme: "seaborn-darkgrid"
+  
+  # Generative AI Integration (Check core implementation for availability)
+  gen_ai:
+    enabled: false
+    model: "llama-3.1-8b-instant"
+
+# ==========================================
+# 4. MLOPS & MONITORING
+# ==========================================
+mlops:
+  experiment_name: "default_experiment"
+  tracking_uri: "sqlite:///mlflow.db"  # MLflow tracking URI
+  log_artifacts: true
+  log_monitoring_metrics: true
+  link_prefect_runs: true
+  run_name_prefix: "aicore_"
+  model_registry:
+    enabled: true
+    auto_register: true
+  metrics:
+    - "accuracy"
+    - "f1_score"
+    - "precision"
+    - "recall"
+  drift_detection:
+    reference_data_path: "data/02_intermediate/train_data.parquet"
+    current_data_path: "data/02_intermediate/inference_data.parquet"
+    threshold: 0.05
+
+# ==========================================
+# 5. FEATURE STORE (FEAST)
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  delta_path: "data/04_feature/features_delta"

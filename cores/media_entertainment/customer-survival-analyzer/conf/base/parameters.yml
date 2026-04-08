@@ -1,0 +1,137 @@
+# ==========================================
+# 1. DATA SKELETON (Mandatory Section 2)
+# ==========================================
+skeleton:
+  transactions:
+    mapping:
+      customer_id: "Customer ID"
+      transaction_date: "InvoiceDate"
+      transaction_value: "Price" # Unit Price
+      quantity: "Quantity"
+      transaction_id: "Invoice"
+    date_format: "%Y-%m-%d %H:%M:%S"
+
+  subscriptions:
+    mapping:
+      customer_id: "msno" # Example based on KKBox
+      start_date: "registration_init_time"
+      end_date: "expiration_date"
+      status: "is_cancel"
+      acquisition_channel: "acquisition_channel"
+    date_format: "%Y%m%d"
+    deductive_logic:
+      subscription_period_days: 30
+      grace_period_days: 14
+    defaults:
+      status: "active"
+      acquisition_channel: "unknown"
+
+  engagement:
+    mapping:
+      customer_id: "customer_key"
+      date: "date_key"
+      engagement_metric: "engagement_metric"
+      engagement_value: "engagement_value"
+    defaults:
+      engagement_metric: "interaction"
+      engagement_value: "engagement_volume"
+
+# ==========================================
+# 2. DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  raw_data_path: "data/01_raw/online_retail_II.csv"
+  processed_data_path: "data/02_intermediate/processed_cltv_data"
+  observation_period_end: "2011-12-09"
+  test_size: 0.2
+  random_state: 42
+
+# ==========================================
+# 3. AI MODELING PARAMETERS
+# ==========================================
+modeling:
+  model_type: "survival_analysis" # Options: survival_analysis, pymc_marketing
+
+  # Survival Analysis Stack
+  survival_analysis:
+    cph:
+      penalizer: 0.1
+    rsf:
+      n_estimators: 100
+      min_samples_split: 10
+    deepsurv:
+      batch_size: 64
+      epochs: 20
+      learning_rate: 0.001
+    nmtlr:
+      batch_size: 64
+      epochs: 20
+      learning_rate: 0.001
+
+  # Explainability (XAI)
+  explainability:
+    shap_sample_size: 100
+    lime_num_instances: 5
+    evaluation:
+      top_k: 3
+
+  # PyMC-Marketing (BTYD Models)
+  pymc_marketing:
+    bg_nbd:
+      penalizer_coef: 0.01
+      chains: 1
+      draws: 20
+      tune: 20
+
+# ==========================================
+# 4. VISUALIZATION PARAMETERS
+# ==========================================
+visualization:
+  plots_dir: "data/08_reporting/plots"
+  plot_theme: "seaborn-darkgrid"
+  frequency_recency_matrix: true
+  probability_alive_matrix: true
+  period_transactions_plot: true
+  survival_curves:
+    time_horizon_days: 365
+
+  # Generative AI Integration
+  llm:
+    model: "llama-3.1-8b-instant"
+    temperature: 0.6
+
+  # Small Language Model integration for local inference
+  slm:
+    # model: "microsoft/Phi-3-mini-4k-instruct"
+    model: "microsoft/Phi-3.5-mini-instruct"
+    # model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    # model: "Qwen/Qwen2.5-7B-Instruct"
+    max_customers: 5
+
+# ==========================================
+# 5. MLOPS & MONITORING
+# ==========================================
+mlops:
+  experiment_name: "customer_survival_analyzer"
+  tracking_uri: "sqlite:///mlflow.db"
+  metrics:
+    - "c_index"
+    - "brier_score"
+    - "auc_time_dependent"
+    - "calibration_score"
+    - "mean_churn_prob_30d"
+    - "mean_churn_prob_90d"
+    - "mean_predicted_median_tenure"
+  drift_detection:
+    reference_data_path: "data/02_intermediate/clean_data"
+    current_data_path: "data/07_model_output/churn_predictions.delta"
+    threshold: 0.05
+
+# ==========================================
+# 6. FEATURE STORE (FEAST)
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  rfm_delta_path: "data/05_model_input/processed_data"
+  survival_delta_path: "data/05_model_input/survival_data"
+  behavioral_delta_path: "data/05_model_input/feature_store"

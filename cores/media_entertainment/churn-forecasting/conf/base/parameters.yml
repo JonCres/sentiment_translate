@@ -1,0 +1,205 @@
+# ==========================================
+# 1. DATA SKELETON (Mandatory Section 2)
+# ==========================================
+skeleton:
+  transactions:
+    mapping:
+      customer_id: "Customer ID"
+      transaction_date: "InvoiceDate"
+      transaction_value: "Price" # Unit Price
+      quantity: "Quantity"
+      transaction_id: "Invoice"
+    date_format: "%Y-%m-%d %H:%M:%S"
+
+  subscriptions:
+    mapping:
+      customer_id: "msno" # Example based on KKBox
+      start_date: "registration_init_time"
+      end_date: "expiration_date"
+      status: "is_cancel"
+      acquisition_channel: "acquisition_channel"
+    date_format: "%Y%m%d"
+    deductive_logic:
+      subscription_period_days: 30
+      grace_period_days: 14
+    defaults:
+      status: "active"
+      acquisition_channel: "unknown"
+
+  engagement:
+    mapping:
+      customer_id: "customer_key"
+      date: "date_key"
+      engagement_metric: "engagement_metric"
+      engagement_value: "engagement_value"
+    defaults:
+      engagement_value: "engagement_volume"
+
+  qoe:
+    mapping:
+      customer_id: "subscriber_id"
+      event_timestamp: "timestamp"
+      buffering_duration_sec: "buffering_ms" # Need handling for unit conv if needed, but simple mapping for now
+      rebuffer_ratio: "rebuffer_pct"
+      error_count: "error_cnt"
+    defaults:
+      buffering_duration_sec: 0.0
+      rebuffer_ratio: 0.0
+      error_count: 0
+
+  social_graph:
+    mapping:
+      source_node: "user_a"
+      target_node: "user_b"
+      weight: "connection_strength"
+      edge_type: "relation_type"
+
+# ==========================================
+# 2. DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  raw_data_path: "data/01_raw/online_retail_II.csv"
+  processed_data_path: "data/02_intermediate/processed_churn_data"
+  observation_period_end: "2011-12-09"
+  test_size: 0.2
+  random_state: 42
+
+# ==========================================
+# 3. AI MODELING PARAMETERS
+# ==========================================
+modeling:
+  model_type: "ensemble" # Options: ensemble, deep_learning
+
+  # Deep Learning (CNN-BiLSTM / CCP-Net)
+  deep_learning:
+    sequence_length: 90 # observation_window_days
+    batch_size: 64
+    epochs: 20
+    learning_rate: 0.001
+    embedding_dim: 128
+    lstm_units: 64
+    cnn_filters: 32
+    kernel_size: 3
+    dropout: 0.2
+
+  # XGBoost (Refinement)
+  xgboost:
+    class: xgboost.XGBClassifier
+    params:
+      n_estimators: 100
+      learning_rate: 0.1
+      max_depth: 6
+      subsample: 0.8
+      colsample_bytree: 0.8
+      objective: "binary:logistic"
+      random_state: 42
+      n_jobs: -1
+    grid_search:
+      param_grid:
+        n_estimators: [100, 200]
+        max_depth: [4, 6, 8]
+        learning_rate: [0.01, 0.1, 0.2]
+    xgboost_target_col: "churn_label"
+    inactivity_threshold_days: 90
+
+  random_forest:
+    class: sklearn.ensemble.RandomForestClassifier
+    params:
+      n_estimators: 100
+      max_depth: 10
+      random_state: 42
+      n_jobs: -1
+    grid_search:
+      param_grid:
+        n_estimators: [100, 200]
+        max_depth: [10, 20, null]
+
+  lightgbm:
+    class: lightgbm.LGBMClassifier
+    params:
+      n_estimators: 100
+      learning_rate: 0.1
+      num_leaves: 31
+      random_state: 42
+      n_jobs: -1
+    grid_search:
+      param_grid:
+        n_estimators: [100, 200]
+        num_leaves: [31, 50]
+        learning_rate: [0.05, 0.1]
+
+  catboost:
+    class: catboost.CatBoostClassifier
+    params:
+      iterations: 100
+      learning_rate: 0.1
+      depth: 6
+      random_seed: 42
+      verbose: False
+      allow_writing_files: False
+    grid_search:
+      param_grid:
+        iterations: [100, 200]
+        depth: [4, 6, 8]
+        learning_rate: [0.05, 0.1]
+
+  ensemble:
+    method: "soft_voting"
+    weights: null # null implies equal weights
+
+  # Explainability
+  explainability:
+    shap:
+      sample_size: 100
+    lime:
+      top_labels: 1
+      num_features: 5
+
+  # Cross Validation
+  cross_validation:
+    n_splits: 5
+
+# ==========================================
+# 4. VISUALIZATION PARAMETERS
+# ==========================================
+visualization:
+  plots_dir: "data/08_reporting/plots"
+  plot_theme: "seaborn-darkgrid"
+  churn_distribution_plot: true
+  risk_tier_plot: true
+  feature_importance_plot: true
+
+  # Generative AI Integration
+  llm:
+    model: "llama-3.1-8b-instant"
+    temperature: 0.6
+
+  # Small Language Model integration for local inference
+  slm:
+    model: "microsoft/Phi-3.5-mini-instruct"
+    max_customers: 5
+
+# ==========================================
+# 5. MLOPS & MONITORING
+# ==========================================
+mlops:
+  experiment_name: "churn_prediction"
+  tracking_uri: "sqlite:///mlflow.db"
+  metrics:
+    - "auc_roc"
+    - "f1_score"
+    - "recall"
+    - "precision"
+    - "accuracy"
+  drift_detection:
+    reference_data_path: "data/02_intermediate/train_summary"
+    current_data_path: "data/02_intermediate/current_summary"
+    threshold: 0.05
+
+# ==========================================
+# 6. FEATURE STORE (FEAST)
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  rfm_delta_path: "data/05_model_input/processed_data"
+  behavioral_delta_path: "data/05_model_input/feature_store"

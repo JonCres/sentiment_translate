@@ -1,0 +1,10 @@
+{
+  "tools": {
+    "shell": {
+      "showColor": true
+    }
+  },
+  "context": {
+    "fileName": ["./app/streamlit.md", "./root_context.md", "./src/prefect_orchestration/prefect.md", "./src/ai_core/kedro.md"]
+  }
+}

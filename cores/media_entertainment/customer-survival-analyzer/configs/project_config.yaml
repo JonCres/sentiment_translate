@@ -1,0 +1,135 @@
+alerts:
+  conditions:
+    on_failure: true
+    on_retry: false
+    on_success: false
+  email:
+    enabled: false
+    from_address: ml-team@company.com
+    smtp_port: 587
+    smtp_server: ${SMTP_SERVER}
+    to_addresses:
+      - ml-team@company.com
+  enabled: true
+  slack:
+    channel: "#ml-alerts"
+    enabled: false
+    webhook_url: ${SLACK_WEBHOOK}
+deployments:
+  ai_pipeline:
+    description: "AI Pipeline: Customer survival analyzer models"
+    entrypoint: src/prefect_orchestration/ai_pipeline.py:run_pipeline
+    name: customer-survival-analyzer-ai-modeling
+    parameters: {}
+    schedule:
+      cron: null
+      enabled: false
+      timezone: America/New_York
+    tags:
+      - ai-pipeline
+      - kedro
+      - survival-analysis
+      - ml
+      - pycox
+    version: 1.0.0
+  data_pipeline:
+    description: "Data Pipeline: Extract, Validate, and Engineer features for Survival Analysis"
+    entrypoint: src/prefect_orchestration/data_pipeline.py:run_pipeline
+    name: customer-survival-data-processing
+    parameters: {}
+    schedule:
+      cron: null
+      enabled: false
+      timezone: America/New_York
+    tags:
+      - data-pipeline
+      - kedro
+      - survival-analysis
+      - etl
+    version: 1.0.0
+  master_pipeline:
+    description: "Master Pipeline: Orchestrates Data, AI, Visualization, and Monitoring"
+    entrypoint: src/prefect_orchestration/run_all_pipelines.py:run_complete_pipeline
+    name: customer-survival-analyzer-master
+    parameters: {}
+    schedule:
+      cron: null
+      enabled: false
+      timezone: America/New_York
+    tags:
+      - master-pipeline
+      - kedro
+      - survival-analysis
+      - orchestration
+    version: 1.0.0
+  monitoring_pipeline:
+    description: "Monitoring Pipeline: Customer survival analyzer model drift and performance checks"
+    entrypoint: src/prefect_orchestration/monitoring_pipeline.py:run_pipeline
+    name: customer-survival-analyzer-monitoring
+    parameters: {}
+    schedule:
+      cron: 0 */4 * * *
+      enabled: true
+      timezone: America/New_York
+    tags:
+      - monitoring-pipeline
+      - kedro
+      - survival-analysis
+      - monitoring
+      - drift-detection
+    version: 1.0.0
+  visualization_pipeline:
+    description: "Visualization Pipeline: Generate Customer survival analyzer insights and matrices"
+    entrypoint: src/prefect_orchestration/visualization_pipeline.py:run_pipeline
+    name: customer-survival-analyzer-visualization
+    parameters: {}
+    schedule:
+      cron: null
+      enabled: false
+      timezone: America/New_York
+    tags:
+      - visualization-pipeline
+      - kedro
+      - survival-analysis
+      - viz
+      - reporting
+    version: 1.0.0
+execution:
+  concurrency:
+    max_concurrent_flows: 5
+    max_concurrent_tasks: 10
+  retry:
+    exponential_backoff: true
+    max_retries: 2
+    retry_delay_seconds: 60
+  timeout:
+    flow_timeout_seconds: 3600
+    task_timeout_seconds: 1800
+general:
+  environment: development
+  log_level: INFO
+  project_path: .
+logging:
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  forward_kedro_logs: true
+  kedro_log_level: INFO
+  level: INFO
+  log_directory: logs/prefect
+  persist_logs: true
+prefect:
+  server:
+    api_url: http://127.0.0.1:4200/api
+    ui_url: http://127.0.0.1:4200
+  storage:
+    path: .
+    type: local
+  work_pool:
+    concurrency_limit: 10
+    name: aicore-pool
+    type: process
+project:
+  description: Premium Customer Survival Analyzer for Media & Entertainment focusing on time-to-event modeling.
+  industry: Media & Entertainment
+  name: customer-survival-analyzer
+  use_case: Customer Survival Analysis
+  version: 1.0.0

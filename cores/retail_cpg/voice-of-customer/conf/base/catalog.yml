@@ -1,0 +1,393 @@
+# ==========================================
+# RAW DATA
+# ==========================================
+amazon_reviews_raw:
+  type: polars.CSVDataset
+  filepath: data/01_raw/amazon_reviews.csv
+  load_args:
+    separator: ","
+    encoding: "utf-8"
+    try_parse_dates: true
+  metadata:
+    kedro-viz:
+      layer: raw
+
+surveys:
+  type: polars.CSVDataset
+  filepath: data/01_raw/surveys.csv
+  load_args:
+    separator: ","
+  metadata:
+    kedro-viz:
+      layer: raw
+
+reviews_loaded:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/02_intermediate/reviews_loaded
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+reviews_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/02_intermediate/reviews_skeleton
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+  metadata:
+    kedro-viz:
+      layer: intermediate
+
+# ==========================================
+# INTERMEDIATE DATA
+# ==========================================
+reviews_cleaned:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/02_intermediate/reviews_cleaned
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+reviews_validated:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/02_intermediate/reviews_validated
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+# ==========================================
+# PRIMARY DATA
+# ==========================================
+reviews_preprocessed:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/03_primary/reviews_preprocessed
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+# ==========================================
+# FEATURE DATA
+# ==========================================
+review_features:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/04_feature/review_features
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+# ==========================================
+# MODEL INPUT
+# ==========================================
+sentiment_model_input:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/05_model_input/sentiment_input
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+topic_model_input:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/05_model_input/topic_input
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+# ==========================================
+# MODELS
+# ==========================================
+sentiment_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/sentiment_model.pkl
+  versioned: true
+  metadata:
+    kedro-viz:
+      layer: models
+
+topic_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/topic_model.pkl
+  versioned: true
+  metadata:
+    kedro-viz:
+      layer: models
+
+rating_prediction_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/rating_prediction_model.pkl
+  versioned: true
+  metadata:
+    kedro-viz:
+      layer: models
+
+# ==========================================
+# MODEL OUTPUTS
+# ==========================================
+sentiment_predictions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/sentiment_predictions
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+topic_assignments:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/topic_assignments
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+# ==========================================
+# ABSA (ASPECT-BASED SENTIMENT) OUTPUTS
+# ==========================================
+absa_model:
+  type: MemoryDataset
+
+reviews_with_aspects:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/reviews_with_aspects
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+  metadata:
+    kedro-viz:
+      layer: model_output
+
+aspect_sentiment_predictions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/aspect_sentiment_predictions
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+  metadata:
+    kedro-viz:
+      layer: model_output
+
+customer_aspect_profiles:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/customer_aspect_profiles
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+  metadata:
+    kedro-viz:
+      layer: model_output
+
+# ==========================================
+# MER (EMOTION RECOGNITION) OUTPUTS
+# ==========================================
+emotion_predictions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/emotion_predictions
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+  metadata:
+    kedro-viz:
+      layer: model_output
+
+# ==========================================
+# UNIFIED INSIGHTS
+# ==========================================
+unified_interaction_records:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/unified_interaction_records
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+  metadata:
+    kedro-viz:
+      layer: model_output
+
+aspect_sentiment_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/aspect_sentiment_summary.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+# ==========================================
+# REPORTING
+# ==========================================
+sentiment_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/sentiment_summary.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+topic_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/topic_summary.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+insights_dashboard_data:
+  type: json.JSONDataset
+  filepath: data/08_reporting/dashboard_data.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+rating_regression_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/rating_regression_metrics.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+monitoring_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/monitoring_metrics.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+high_urgency_alerts:
+  type: json.JSONDataset
+  filepath: data/08_reporting/high_urgency_alerts.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+business_kpis_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/business_kpis.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+# ==========================================
+# COMBINED DATA FOR VISUALIZATION
+# ==========================================
+combined_sentiment_topics:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/combined_sentiment_topics
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+# ==========================================
+# VISUALIZATION OUTPUTS
+# ==========================================
+sentiment_distribution_plot:
+  type: MemoryDataset
+
+sentiment_confidence_plot:
+  type: MemoryDataset
+
+sentiment_by_rating_plot:
+  type: MemoryDataset
+
+topic_distribution_plot:
+  type: MemoryDataset
+
+topic_wordclouds_plot:
+  type: MemoryDataset
+
+sentiment_topic_heatmap_plot:
+  type: MemoryDataset
+
+overview_dashboard_plot:
+  type: MemoryDataset
+
+# ==========================================
+# CUSTOMER PROFILE DATA
+# ==========================================
+customer_sentiment_profiles:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/customer_sentiment_profiles
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+customer_topic_profiles:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+
+  file_format: delta
+  filepath: data/07_model_output/customer_topic_profiles
+  save_args:
+    mode: overwrite
+    overwrite_schema: true
+
+customer_sentiment_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/customer_sentiment_summary.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+customer_topic_summary:
+  type: json.JSONDataset
+  filepath: data/08_reporting/customer_topic_summary.json
+  metadata:
+    kedro-viz:
+      layer: reporting
+
+# ==========================================
+# CUSTOMER VISUALIZATION OUTPUTS
+# ==========================================
+customer_sentiment_sunburst_plot:
+  type: MemoryDataset
+
+customer_topic_treemap_plot:
+  type: MemoryDataset
+
+customer_radar_chart_plot:
+  type: MemoryDataset
+
+customer_sentiment_timeline_plot:
+  type: MemoryDataset
+
+customer_review_volume_plot:
+  type: MemoryDataset
+
+# ==========================================
+# VISUALIZATION INTERPRETATIONS
+# ==========================================
+visualization_interpretations:
+  type: MemoryDataset
+
+# ==========================================
+# FEAST FEATURE STORE
+# ==========================================
+feast_registration_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/feast_registration_status.json
+  metadata:
+    kedro-viz:
+      layer: reporting

@@ -1,0 +1,150 @@
+# Data Catalog
+# Define your datasets here
+
+raw_data:
+  type: polars.CSVDataset
+  filepath: data/01_raw/online_retail_II.csv
+  load_args:
+    separator: ","
+    encoding: "utf-8"
+    try_parse_dates: true
+    infer_schema_length: 10000
+
+raw_subscriptions:
+  type: polars.CSVDataset
+  filepath: data/01_raw/subscriptions.csv
+  load_args:
+    ignore_errors: true
+
+raw_engagement:
+  type: polars.CSVDataset
+  filepath: data/01_raw/engagement_fact_table.csv
+  load_args:
+    ignore_errors: true
+
+transactions_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/transactions_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+subscriptions_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/subscriptions_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+engagement_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/engagement_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+cleaned_customer_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/clean_data
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+processed_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/processed_data
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+survival_data_prepared:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/survival_data_prepared
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+# --- Survival Models ---
+
+cox_ph_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.sklearn
+  save_args:
+    name: "cox_ph_model"
+    registered_model_name: "survival_cox_ph"
+
+rsf_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.sklearn
+  save_args:
+    name: "rsf_model"
+    registered_model_name: "survival_random_forest"
+
+deepsurv_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.pytorch
+  save_args:
+    name: "deepsurv_model"
+    registered_model_name: "survival_deepsurv"
+
+nmtlr_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.pytorch
+  save_args:
+    name: "nmtlr_model"
+    registered_model_name: "survival_nmtlr"
+
+# --- BTYD Models ---
+
+bg_nbd_model_pymc:
+  type: pickle.PickleDataset # PyMC models usually need custom handling or cloudpickle, kept as is for now as per technical walkthrough.md mentions of its storage.
+  filepath: data/06_models/bg_nbd_model_pymc.pkl
+
+# --- Reports ---
+
+shap_summary_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/plots/shap_summary.png
+
+survival_curves_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/plots/survival_curves.png
+
+model_comparison_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/plots/model_comparison.png
+
+model_metrics:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/model_metrics.csv
+
+# --- Results ---
+
+raw_churn_predictions:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/raw_churn_predictions.csv
+
+churn_predictions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/07_model_output/churn_predictions.delta
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+feast_registration_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/feast_registration_status.json

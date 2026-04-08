@@ -1,0 +1,12 @@
+translation:
+  model_name: "Helsinki-NLP/opus-mt-es-en"
+  source_language: "auto"
+  target_language: "en"
+  error_value: "ERROR"
+
+sentiment:
+  model_name: "distilbert-base-uncased-finetuned-sst-2-english"
+
+validation:
+  min_length: 3
+  allow_errors: false

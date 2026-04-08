@@ -1,0 +1,178 @@
+# Parameters for Voice of the Client (Marketing)
+
+# ==========================================
+# 1. DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  raw_data_path: "data/01_raw/client_feedback.csv"
+  processed_data_path: "data/02_intermediate/clean_feedback.delta"
+  test_size: 0.2
+  random_state: 42
+  imputation_strategy: "mean" # Options: mean, median, most_frequent, constant
+  normalization: "standard" # Options: minmax, standard, robust, none
+
+  # Language Detection
+  language_detection:
+    enabled: true
+    model_name: "papluca/xlm-roberta-base-language-detection"
+    batch_size: 32
+    fallback_lang: "en"
+    min_confidence: 0.5
+    translation:
+      enabled: true
+      target_lang: "en"
+
+  # Skeleton Data Mapping (Standardized Interface)
+  skeleton_mapping:
+    mandatory:
+      Interaction_ID: "Interaction_ID"
+      Interaction_Payload: "Improvement_Comments"
+      Customer_ID: "Account_ID"
+      NPS_Score: "NPS_Score"
+    optional:
+      Timestamp: "Survey_Date"
+      Timestamp_Format: "%B-%Y"
+      Contract_Value: "Contract_Value"
+      Channel_ID: "Survey"
+      Rating: "NPS_Category"
+      CSAT_Score: "CSAT_Score"
+      Respondent_Role: "Respondent_Role"
+      Account_Name: "Account_Name"
+      Tier: "Tier"
+    defaults:
+      Timestamp: null
+      Timestamp_Format: "%B-%Y"
+      Channel_ID: null
+      Target_Object_ID: "General"
+      Rating: null
+      Contract_Value: 0
+      Respondent_Role: "User"
+
+  # PII Redaction
+  pii_masking:
+    enabled: true
+
+# ==========================================
+# 2. AI MODELING PARAMETERS
+# ==========================================
+modeling:
+  # Aspect-Based Sentiment Analysis (ABSA)
+  absa:
+    enabled: true
+    model_name: "nlptown/bert-base-multilingual-uncased-sentiment"
+    aspects:
+      ["service", "communication", "support", "helpdesk", "team", "quality"]
+
+  # Multimodal Emotion Recognition (MER / Emotion Analysis)
+  mer:
+    enabled: true
+    model_name: "j-hartmann/emotion-english-distilroberta-base"
+    batch_size: 16
+    labels:
+      joy: "Positive / Content"
+      anger: "Frustrated / Angry"
+      sadness: "Disappointed / Sad"
+      fear: "Concerned / Worried"
+      surprise: "Surprised / Uncertain"
+      disgust: "Dissatisfied / Irritated"
+      neutral: "Neutral / Objective"
+    sampling_rate: 16000
+    frame_rate: 1
+
+  sentiment_scoring:
+    enabled: true
+    model_name: "ProsusAI/finbert" # Optimized for B2B/Professional context
+    batch_size: 16
+
+  topic:
+    enabled: true
+    model:
+      algorithm: "BERTopic"
+      embedding_model: "all-MiniLM-L6-v2"
+      nr_topics: "auto"
+      min_topic_size: 15
+      calculate_probabilities: true
+      # Topic naming configuration for user-friendly labels (fallback)
+      naming:
+        top_n_words: 4 # Number of keywords to use for topic names
+        max_label_length: 50 # Maximum length of topic labels
+      # SLM or Groq-based labeling configuration
+      llm:
+        enabled: true # Set to false to use keyword-based labels
+        provider: "groq" # Options: "local" (HuggingFace SLM), "groq" (Groq Cloud API)
+        model: "llama-3.1-8b-instant" # If provider is "local", use HF path; if "groq", use Groq model ID
+        temperature: 0.2 # Lower = more deterministic labels
+        max_tokens: 30 # Max tokens for label generation
+        top_n_words: 10 # c-TF-IDF words to send to LLM
+        top_n_docs: 3 # Representative docs to send to LLM
+
+    reduction:
+      n_neighbors: 7
+      n_components: 4
+      min_dist: 0.0
+
+    clustering:
+      min_cluster_size: 7
+      metric: "euclidean"
+      cluster_selection_method: "eom"
+      core_dist_n_jobs: 3 # Number of CPU cores for HDBSCAN parallelization
+
+  # Predictive Rating (XGBoost)
+  ratings:
+    nps_prediction:
+      enabled: false
+    csat_prediction:
+      enabled: false
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 6
+    early_stopping_rounds: 10
+
+  # Churn Prediction (Optional)
+  churn:
+    enabled: false
+    min_samples: 1
+    target_column: "churn_label"
+
+# ==========================================
+# 3. VISUALIZATION PARAMETERS
+# ==========================================
+visualization:
+  plots_dir: "data/08_reporting/plots"
+  generate_feature_importance: true
+  nps_correlation_plot: true
+  sentiment_trend_window: 30 # Days
+  slm: "Qwen/Qwen2.5-1.5B-Instruct"
+  feature_dist:
+    top_n_features: 10
+  correlation:
+    method: "pearson"
+  model_eval:
+    plots: ["actual_vs_predicted", "residuals"]
+  analysis:
+    top_n_drivers: 10
+  save:
+    output_dir: "data/08_reporting/plots"
+
+# ==========================================
+# 4. MLOPS & MONITORING
+# ==========================================
+mlops:
+  experiment_name: "marketing_voice_of_client"
+  tracking_uri: "sqlite:///mlflow.db"
+  log_artifacts: true
+  log_monitoring_metrics: true
+  metrics:
+    - "f1_score"
+    - "precision"
+    - "recall"
+    - "nps_correlation"
+  drift_detection:
+    threshold: 0.05
+
+# ==========================================
+# 5. FEATURE STORE (FEAST)
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  delta_path: "data/04_feature/client_features.delta"

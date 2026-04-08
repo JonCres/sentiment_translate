@@ -1,0 +1,122 @@
+# ==========================================
+# 1. DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  raw_data_path: "data/01_raw/online_retail_II.csv"
+  processed_data_path: "data/02_intermediate/processed_cltv_data"
+  date_format: "%Y-%m-%d %H:%M:%S"
+  transaction_date_col: "InvoiceDate"
+  customer_id_col: "Customer ID"
+  invoice_value_col: "Price"
+  quantity_col: "Quantity"
+  observation_period_end: "2011-12-09"
+  test_size: 0.2
+  random_state: 42
+  
+  # PII Masking
+  pii_columns: ["email", "phone", "Customer Name"]
+  text_columns: ["customer_feedback"] # Only if present
+
+  # Skeleton Mapping
+  skeleton_mapping:
+    # Universal Mandatory (Non-Contractual)
+    transactional:
+      customer_id: "Customer ID"
+      transaction_date: "InvoiceDate"
+      transaction_value: "Price"
+      transaction_count: "Quantity"
+    # Conditional Mandatory (Contractual)
+    contractual:
+      subscription_start_date: "sub_start" # Placeholder
+      subscription_status: "sub_status" # Placeholder
+      churn_reason: "churn_reason" # Placeholder
+      billing_interval: "billing_interval" # Placeholder
+    # Optional but High-Value
+    muscle:
+      return_flag: "return_flag"
+      acquisition_channel: "acquisition_channel"
+      discount_depth: "discount_depth"
+      marketing_opt_in: "marketing_opt_in"
+
+# ==========================================
+# 2. AI MODELING PARAMETERS
+# ==========================================
+modeling:
+  model_type: "hybrid" # Options: lifetimes, hybrid, xgboost
+  prediction_horizons: [12, 24, 36] # Months
+
+  # Non-Contractual (BG/NBD + GG)
+  lifetimes:
+    n_bootstrap: 100
+    bg_nbd:
+      penalizer_coef: 0.01
+    gamma_gamma:
+      penalizer_coef: 0.01
+
+  # Contractual (sBG + Weibull AFT)
+  contractual:
+    sbg:
+      penalizer_coef: 0.01
+    weibull:
+      alpha: 0.05
+
+  # Refinement (XGBoost)
+  xgboost:
+    params:
+      max_depth: 6
+      eta: 0.1
+      objective: "reg:squarederror"
+      n_estimators: 100
+
+  # LSTM Sequential Model
+  lstm:
+    lstm_hidden_size: 32
+    lstm_epochs: 10
+    min_sequence_length: 2
+
+  # LightGBM Ensemble
+  ensemble:
+    ensemble_params:
+      objective: "regression"
+      metric: "rmse"
+      verbosity: -1
+      boosting_type: "gbdt"
+
+# ==========================================
+# 3. VISUALIZATION & BUSINESS IMPACT
+# ==========================================
+visualization:
+  plots_dir: "data/08_reporting/plots"
+  plot_theme: "seaborn-darkgrid"
+  frequency_recency_matrix: true
+  probability_alive_matrix: true
+  period_transactions_plot: true
+
+  # Business Impact Baselines (Example)
+  baselines:
+    avg_cltv: 325
+    retention_high_value: 0.72
+    cac_clv_ratio: 0.4
+    churn_rate: 0.18
+
+# ==========================================
+# 4. MLOPS & MONITORING
+# ==========================================
+mlops:
+  experiment_name: "cltv_prediction"
+  tracking_uri: "sqlite:///mlflow.db"
+  metrics:
+    - "rmse"
+    - "mae"
+    - "cltv_mean"
+  drift_detection:
+    reference_data_path: "data/02_intermediate/train_summary"
+    current_data_path: "data/02_intermediate/current_summary"
+    threshold: 0.05
+
+# ==========================================
+# 5. FEATURE STORE (FEAST)
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  delta_path: "data/03_primary/processed_data"

@@ -1,0 +1,23 @@
+raw_reviews:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/amazon_reviews.csv
+
+speech_reviews:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/speech_reviews.csv
+
+translated_reviews:
+  type: pandas.CSVDataSet
+  filepath: data/02_intermediate/translated_reviews.csv
+
+validated_reviews:
+  type: pandas.CSVDataSet
+  filepath: data/03_primary/validated_reviews.csv
+
+sentiment_reviews:
+  type: pandas.CSVDataSet
+  filepath: data/03_primary/sentiment_reviews.csv
+
+  report:
+  type: text.TextDataSet
+  filepath: data/08_reporting/report.txt

@@ -1,0 +1,192 @@
+# Data Catalog
+# Define your datasets here
+
+raw_data:
+  type: polars.CSVDataset
+  filepath: data/01_raw/online_retail_II.csv
+  load_args:
+    separator: ","
+    encoding: "utf-8"
+    try_parse_dates: true
+    infer_schema_length: 10000
+
+raw_qoe:
+  type: polars.CSVDataset
+  filepath: data/01_raw/qoe_telemetry.csv
+  load_args:
+    ignore_errors: true
+
+raw_social_graph:
+  type: polars.CSVDataset
+  filepath: data/01_raw/social_connections.csv
+  load_args:
+    ignore_errors: true
+
+raw_subscriptions:
+  type: polars.CSVDataset
+  filepath: data/01_raw/subscriptions.csv
+  load_args:
+    ignore_errors: true
+
+raw_engagement:
+  type: polars.CSVDataset
+  filepath: data/01_raw/engagement_fact_table.csv
+  load_args:
+    ignore_errors: true
+
+transactions_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/transactions_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+subscriptions_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/subscriptions_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+engagement_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/engagement_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+qoe_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/qoe_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+social_graph_skeleton:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/social_graph_skeleton
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+cleaned_customer_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/clean_data
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+processed_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/processed_data
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+tensor_sequences:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/tensor_sequences
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+tensor_labels:
+  type: ai_core.datasets.tensor_dataset.TensorDataset
+  filepath: data/05_model_input/tensor_labels.npy
+
+survival_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/survival_data
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+feature_store:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/feature_store
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite
+
+xgboost_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.sklearn
+  save_args:
+    name: "xgboost_model"
+    registered_model_name: "churn_xgboost_model"
+
+kaplan_meier_result:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/08_reporting/kaplan_meier_result.pickle
+
+cox_ph_result:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/08_reporting/cox_ph_result.pickle
+
+feast_registration_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/feast_registration_status.json
+
+churn_lstm_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.pytorch
+  save_args:
+    name: "churn_lstm_model"
+    registered_model_name: "churn_lstm_deep_learning"
+
+random_forest_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.sklearn
+  save_args:
+    name: "random_forest_model"
+    registered_model_name: "churn_random_forest"
+
+lightgbm_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.lightgbm
+  save_args:
+    name: "lightgbm_model"
+    registered_model_name: "churn_lightgbm"
+
+catboost_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.catboost
+  save_args:
+    name: "catboost_model"
+    registered_model_name: "churn_catboost"
+
+ensemble_model:
+  type: kedro_mlflow.io.models.MlflowModelTrackingDataset
+  flavor: mlflow.sklearn
+  save_args:
+    name: "ensemble_model"
+    registered_model_name: "churn_ensemble_production"
+
+churn_predictions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/07_model_output/churn_predictions
+  save_args:
+    mode: overwrite
+    delta_write_options:
+      schema_mode: overwrite

@@ -1,0 +1,12 @@
+# MLflow Local Configuration
+# This file is NOT committed to version control (.gitignore)
+#
+# Override these settings for your local environment.
+# Production credentials should be managed via Prefect Blocks or environment variables.
+
+server:
+  mlflow_tracking_uri: "sqlite:///mlflow.db"
+
+tracking:
+  experiment:
+    name: "retail_cpg_voice_of_customer"

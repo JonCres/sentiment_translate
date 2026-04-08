@@ -1,0 +1,66 @@
+# Data Catalog
+# Define your datasets here
+
+raw_data:
+  type: polars.CSVDataset
+  filepath: data/01_raw/online_retail_II.csv
+  load_args:
+    separator: ","
+    encoding: "utf-8"
+    try_parse_dates: true
+    infer_schema_length: 10000
+
+masked_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/masked_data
+  save_args:
+    mode: overwrite
+
+cleaned_customer_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/02_intermediate/clean_data
+  save_args:
+    mode: overwrite
+
+engagement_sequences:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/engagement_sequences
+  save_args:
+    mode: overwrite
+
+processed_data:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/05_model_input/processed_data
+  save_args:
+    mode: overwrite
+
+bg_nbd_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/bg_nbd_model.pkl
+
+gamma_gamma_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/gamma_gamma_model.pkl
+
+lstm_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/lstm_model.pkl
+
+ensemble_model:
+  type: ai_core.datasets.cloudpickle_dataset.CloudPickleDataset
+  filepath: data/06_models/ensemble_model.pkl
+
+cltv_predictions:
+  type: ai_core.datasets.polars_delta_dataset.PolarsDeltaDataset
+  file_format: delta
+  filepath: data/07_model_output/cltv_predictions
+  save_args:
+    mode: overwrite
+
+feast_registration_status:
+  type: json.JSONDataset
+  filepath: data/08_reporting/feast_registration_status.json

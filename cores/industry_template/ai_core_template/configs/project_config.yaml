@@ -1,0 +1,200 @@
+# ==========================================
+# PREFECT ORCHESTRATION CONFIGURATION
+# ==========================================
+# This file contains Prefect-specific orchestration settings.
+# For pipeline logic parameters (data processing, models, etc.),
+# see: conf/base/parameters.yml (Kedro configuration)
+
+# ==========================================
+# PROJECT METADATA
+# ==========================================
+project:
+  name: "aicore-name"
+  version: "1.0.0"
+  industry: "industry_name"
+  description: "Description of the AI Core"
+  use_case: "Description of the use case"
+
+# ==========================================
+# GENERAL SETTINGS
+# ==========================================
+general:
+  environment: "development"  # development, staging, production
+  project_path: "."
+  log_level: "INFO"
+
+# ==========================================
+# PREFECT SERVER CONFIGURATION
+# ==========================================
+prefect:
+  # Server settings
+  server:
+    api_url: "http://127.0.0.1:4200/api"
+    ui_url: "http://127.0.0.1:4200"
+  
+  # Work pool configuration
+  work_pool:
+    name: "aicore-pool"
+    type: "process"
+    concurrency_limit: 10
+  
+  # Storage configuration (for deployment code storage)
+  storage:
+    type: "local"  # local, s3, gcs, github
+    path: "."
+
+# ==========================================
+# DEPLOYMENT CONFIGURATIONS
+# ==========================================
+deployments:
+  # Data Pipeline Deployment
+  data_pipeline:
+    name: "voice-of-customer-data"
+    description: "Data Pipeline: Extract, Validate, Clean, Feature Engineering using Kedro"
+    version: "1.0.0"
+    tags: 
+      - "data-pipeline"
+      - "kedro"
+      - "voice-of-customer"
+      - "etl"
+    schedule:
+      enabled: false
+      cron: null  # e.g., "0 2 * * *" for daily at 2 AM
+      timezone: "America/New_York"
+    parameters: {}
+    entrypoint: "src/prefect_orchestration/data_pipeline.py:run_pipeline"
+  
+  # AI Pipeline Deployment
+  ai_pipeline:
+    name: "voice-of-customer-ai"
+    description: "AI Pipeline: Sentiment Analysis and Topic Modeling using Kedro"
+    version: "1.0.0"
+    tags:
+      - "ai-pipeline"
+      - "kedro"
+      - "voice-of-customer"
+      - "ml"
+      - "sentiment-analysis"
+      - "topic-modeling"
+    schedule:
+      enabled: false
+      cron: null  # e.g., "0 3 * * *" for daily at 3 AM
+      timezone: "America/New_York"
+    parameters: {}
+    entrypoint: "src/prefect_orchestration/ai_pipeline.py:run_pipeline"
+  
+  # Visualization Pipeline Deployment
+  visualization_pipeline:
+    name: "voice-of-customer-visualization"
+    description: "Visualization Pipeline: Generate charts and dashboards using Kedro"
+    version: "1.0.0"
+    tags:
+      - "visualization-pipeline"
+      - "kedro"
+      - "voice-of-customer"
+      - "viz"
+      - "reporting"
+    schedule:
+      enabled: false
+      cron: null  # e.g., "0 4 * * *" for daily at 4 AM
+      timezone: "America/New_York"
+    parameters: {}
+    entrypoint: "src/prefect_orchestration/visualization_pipeline.py:run_pipeline"
+  
+  # Monitoring Pipeline Deployment
+  monitoring_pipeline:
+    name: "voice-of-customer-monitoring"
+    description: "Monitoring Pipeline: Drift Detection and Performance Checks using Kedro"
+    version: "1.0.0"
+    tags:
+      - "monitoring-pipeline"
+      - "kedro"
+      - "voice-of-customer"
+      - "monitoring"
+      - "drift-detection"
+    schedule:
+      enabled: true
+      cron: "0 */4 * * *"  # Every 4 hours
+      timezone: "America/New_York"
+    parameters: {}
+    entrypoint: "src/prefect_orchestration/monitoring_pipeline.py:run_pipeline"
+
+  # Master Pipeline Deployment
+  master_pipeline:
+    name: "aicore-master"
+    description: "Master Pipeline: Orchestrates Data, AI, Visualization, and Monitoring using Kedro"
+    version: "1.0.0"
+    tags:
+      - "master-pipeline"
+      - "kedro"
+      - "aicore"
+      - "orchestration"
+    schedule:
+      enabled: false
+      cron: null  # e.g., "0 5 * * *" for daily at 5 AM
+      timezone: "America/New_York"
+    parameters: {}
+    entrypoint: "src/prefect_orchestration/run_all_pipelines.py:run_complete_pipeline"
+
+# ==========================================
+# ALERTING & NOTIFICATIONS
+# ==========================================
+alerts:
+  enabled: true
+  
+  # Email notifications
+  email:
+    enabled: false
+    smtp_server: "${SMTP_SERVER}"
+    smtp_port: 587
+    from_address: "ml-team@company.com"
+    to_addresses:
+      - "ml-team@company.com"
+  
+  # Slack notifications
+  slack:
+    enabled: false
+    webhook_url: "${SLACK_WEBHOOK}"
+    channel: "#ml-alerts"
+  
+  # Alert conditions
+  conditions:
+    on_failure: true
+    on_success: false
+    on_retry: false
+
+# ==========================================
+# EXECUTION SETTINGS
+# ==========================================
+execution:
+  # Retry configuration
+  retry:
+    max_retries: 2
+    retry_delay_seconds: 60
+    exponential_backoff: true
+  
+  # Timeout configuration
+  timeout:
+    flow_timeout_seconds: 3600  # 1 hour
+    task_timeout_seconds: 1800  # 30 minutes
+  
+  # Concurrency
+  concurrency:
+    max_concurrent_flows: 5
+    max_concurrent_tasks: 10
+
+# ==========================================
+# LOGGING & OBSERVABILITY
+# ==========================================
+logging:
+  # Prefect logging configuration
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log persistence
+  persist_logs: true
+  log_directory: "logs/prefect"
+  
+  # Integration with Kedro logging
+  forward_kedro_logs: true
+  kedro_log_level: "INFO"

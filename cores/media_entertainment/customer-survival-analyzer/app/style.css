@@ -1,0 +1,229 @@
+/* Modern Light CSS for Streamlit with Soft Glassmorphism */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+/* Main Background */
+.stApp {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #2c3e50;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Glassmorphism containers */
+div.stMetric,
+div[data-testid="metric-container"],
+.stDataFrame,
+.stPlotlyChart {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+div.stMetric:hover,
+div[data-testid="metric-container"]:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 45px rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Headers */
+h1,
+h2,
+h3 {
+    background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient 4s linear infinite;
+    font-weight: 700;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+/* Buttons */
+.stButton>button {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 10px 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.stButton>button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    background: linear-gradient(45deg, #764ba2, #667eea);
+}
+
+/* Sidebar Styling */
+section[data-testid="stSidebar"] {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+section[data-testid="stSidebar"] .stSelectbox,
+section[data-testid="stSidebar"] .stSlider {
+    background: white;
+    border-radius: 12px;
+}
+
+/* Dataframe and Tables */
+.stDataFrame {
+    border: none !important;
+}
+
+/* Metrics */
+[data-testid="stMetricValue"] {
+    font-weight: 700;
+    color: #434343 !important;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #667eea !important;
+    font-size: 1rem !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Tabs Styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 24px;
+    background-color: transparent;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 10px 10px 0 0;
+    gap: 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border: none;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border-bottom: 3px solid #667eea !important;
+}
+
+/* Divider */
+hr {
+    border: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, rgba(102, 126, 234, 0.3), transparent);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
+/* Customer Card Hover Effect */
+.customer-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 45px rgba(102, 126, 234, 0.2) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Metric Card Hover Effect */
+.metric-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+    border-top-width: 8px !important;
+}
+
+/* AI Analysis Report Styling */
+.ai-report-container {
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    border: 1px solid #eef2f6;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.05);
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-report-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.ai-report-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.ai-report-badge {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.ai-report-content {
+    font-size: 1rem;
+    color: #4a5568;
+    line-height: 1.8;
+}
+
+.ai-report-content h1, .ai-report-content h2, .ai-report-content h3 {
+    color: #2c3e50;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    background: none;
+    -webkit-text-fill-color: initial;
+    background-clip: initial;
+    animation: none;
+}
+
+.ai-report-content ul {
+    padding-left: 20px;
+}
+
+.ai-report-content li {
+    margin-bottom: 8px;
+}

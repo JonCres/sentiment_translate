@@ -1,0 +1,13 @@
+# MLflow Local Configuration
+# This file is NOT committed to version control (.gitignore)
+#
+# Override these settings for your local environment.
+# Production credentials should be managed via Prefect Blocks or environment variables.
+
+# server:
+#   mlflow_tracking_uri: "http://your-mlflow-server:5000"
+
+# credentials:
+#   username: ${MLFLOW_TRACKING_USERNAME}
+#   password: ${MLFLOW_TRACKING_PASSWORD}
+#   token: ${MLFLOW_TRACKING_TOKEN}

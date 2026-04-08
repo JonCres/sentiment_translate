@@ -1,0 +1,181 @@
+# ==========================================
+# 1. DATA SKELETON (Mandatory Section 2)
+# ==========================================
+skeleton:
+  transactions:
+    mapping:
+      customer_id: "Customer ID"
+      transaction_date: "InvoiceDate"
+      transaction_value: "Price" # Unit Price
+      quantity: "Quantity"
+      transaction_id: "Invoice"
+    date_format: "%Y-%m-%d %H:%M:%S"
+
+  subscriptions:
+    mapping:
+      customer_id: "msno" # Example based on KKBox
+      start_date: "registration_init_time"
+      end_date: "expiration_date"
+      status: "is_cancel"
+      acquisition_channel: "acquisition_channel"
+    date_format: "%Y%m%d"
+    deductive_logic:
+      subscription_period_days: 30
+      grace_period_days: 14
+    defaults:
+      status: "active"
+      acquisition_channel: "unknown"
+
+  engagement:
+    mapping:
+      customer_id: "customer_key"
+      date: "date_key"
+      engagement_metric: "engagement_metric"
+      engagement_value: "engagement_value"
+    defaults:
+      engagement_metric: "interaction"
+      engagement_value: "engagement_volume"
+
+  interactions:
+    mapping:
+      customer_id: "user_unique_id"
+      interaction_type: "event_name"
+      interaction_value: "duration_sec"
+      content_id: "title_id"
+    defaults:
+      interaction_type: "watch"
+
+  qoe:
+    mapping:
+      customer_id: "user_unique_id"
+      buffering_duration: "buffering_ms"
+      startup_time: "join_time_ms"
+      error_count: "error_code"
+      bitrate: "avg_bitrate_kbps"
+
+  advertising:
+    mapping:
+      customer_id: "user_unique_id"
+      ad_id: "ad_creative_id"
+      ad_duration: "duration_sec"
+      completion_status: "is_completed"
+      cpm: "estimated_cpm"
+
+# ==========================================
+# 2. DATA PROCESSING PARAMETERS
+# ==========================================
+data_processing:
+  raw_data_path: "data/01_raw/online_retail_II.csv"
+  processed_data_path: "data/02_intermediate/processed_cltv_data"
+  observation_period_end: "2011-12-09"
+  test_size: 0.2
+  random_state: 42
+
+# ==========================================
+# 3. AI MODELING PARAMETERS
+# ==========================================
+modeling:
+  model_type: "cltv_ensemble"
+
+  # 1. Deterministic Recurring Revenue (SVOD)
+  svod:
+    model: "gradient_boosting" # XGBoost/LightGBM
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 6
+    tweedie_variance_power: 1.5
+
+  # 2. Stochastic Engagement Revenue (AVOD)
+  avod:
+    model: "deep_sequential" # LSTM/GRU
+    hidden_dim: 128
+    n_layers: 2
+    dropout: 0.2
+    epochs: 30
+    batch_size: 64
+
+  # 3. Sparse Event Revenue (TVOD)
+  tvod:
+    model: "factorization_machines" # DeepFM
+    embedding_dim: 16
+    hidden_units: [128, 64]
+    dropout: 0.1
+
+  # Legacy/Alternative Survival Analysis (Hazard Modeling)
+  survival_analysis:
+    model: "cox_ph"
+    penalizer: 0.1
+    cph:
+      penalizer: 0.1
+    rsf:
+      n_estimators: 100
+      min_samples_split: 10
+    deepsurv:
+      epochs: 10
+      batch_size: 256
+      learning_rate: 0.01
+    nmtlr:
+      epochs: 10
+      batch_size: 256
+      learning_rate: 0.01
+
+  # Probabilistic Monetization (BTYD)
+  probabilistic:
+    model: "bg_nbd"
+    penalizer_coef: 0.01
+
+  # Explainability (XAI)
+  explainability:
+    shap_sample_size: 200
+    lime_num_instances: 5
+
+# ==========================================
+# 4. VISUALIZATION PARAMETERS
+# ==========================================
+visualization:
+  plots_dir: "data/08_reporting/plots"
+  plot_theme: "seaborn-darkgrid"
+  frequency_recency_matrix: true
+  probability_alive_matrix: true
+  period_transactions_plot: true
+  survival_curves:
+    time_horizon_days: 365
+
+  # Generative AI Integration
+  llm:
+    model: "llama-3.1-8b-instant"
+    temperature: 0.6
+
+  # Small Language Model integration for local inference
+  slm:
+    # model: "microsoft/Phi-3-mini-4k-instruct"
+    model: "microsoft/Phi-3.5-mini-instruct"
+    # model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    # model: "Qwen/Qwen2.5-7B-Instruct"
+    max_customers: 5
+
+# ==========================================
+# 5. MLOPS & MONITORING
+# ==========================================
+mlops:
+  experiment_name: "cltv_prediction_2026"
+  tracking_uri: "sqlite:///mlflow.db"
+  metrics:
+    - "c_index"
+    - "brier_score"
+    - "survival_prob_mean"
+    - "hazard_rate_mean"
+    - "tenure_median"
+  drift_detection:
+    reference_data_path: "data/02_intermediate/train_summary"
+    current_data_path: "data/02_intermediate/current_summary"
+    threshold: 0.05
+
+# ==========================================
+# 6. FEATURE STORE (FEAST)
+# ==========================================
+feast:
+  feature_repo_path: "feature_repo"
+  rfm_delta_path: "data/05_model_input/processed_data"
+  survival_delta_path: "data/05_model_input/survival_data"
+  behavioral_delta_path: "data/05_model_input/feature_store"
