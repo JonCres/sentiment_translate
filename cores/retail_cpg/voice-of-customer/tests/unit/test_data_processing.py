@@ -591,9 +591,11 @@ class TestValidateReviews:
 
     def test_pydantic_validation_on_params(self):
         """Required fields in ValidationParams are enforced by Pydantic."""
+        from pydantic import ValidationError
+
         df = _make_skeleton_df(n=1)
         # required_columns is a required field (Field(...))
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             validate_reviews(df, {"min_review_length": 5})
 
 
