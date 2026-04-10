@@ -91,9 +91,17 @@ xpu = [
     # See README.md for Linux XPU setup instructions (Intel compute runtime + pip install)
     # This extra is provided for cross-platform compatibility but won't install on Linux during resolution
 ]
-cuda = ["torch>=2.6.0", "torchvision>=0.21.0", "torchaudio>=2.6.0"]
+cuda = [
+    "torch>=2.6.0; sys_platform != 'darwin'",
+    "torchvision>=0.21.0; sys_platform != 'darwin'",
+    "torchaudio>=2.6.0; sys_platform != 'darwin'",
+]
 cpu = ["torch>=2.6.0", "torchvision>=0.21.0", "torchaudio>=2.6.0"]
-mps = ["torch>=2.6.0", "torchvision>=0.21.0", "torchaudio>=2.6.0"]
+mps = [
+    "torch>=2.6.0; sys_platform == 'darwin'",
+    "torchvision>=0.21.0; sys_platform == 'darwin'",
+    "torchaudio>=2.6.0; sys_platform == 'darwin'",
+]
 
 [tool.uv]
 index-strategy = "unsafe-best-match"
